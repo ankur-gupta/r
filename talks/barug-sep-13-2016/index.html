@@ -21,7 +21,11 @@
         <link rel="stylesheet" href="../../revealjs/css/theme/white.css" id="theme">
 
         <!-- Theme used for syntax highlighting of code -->
-        <link rel="stylesheet" href="../../revealjs/lib/css/zenburn.css">
+        <link rel="stylesheet" href="../../revealjs/lib/css/trio.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="custom.css">
+
 
         <!-- Printing and PDF exports -->
         <script>
@@ -56,31 +60,31 @@
 
                 <section id="fragments">
                         <h2>Which package loads?</h2>
-                        <pre><code class="hljs" data-trim contenteditable>
+                        <pre><code class="lang-r hljs" data-trim contenteditable>
                         > library(ggplot2)
                         </code></pre>
-                        <pre><code class="hljs fragment" data-trim contenteditable>
+                        <pre><code class="lang-r hljs fragment" data-trim contenteditable>
                         > # ggplot2 loads
                         </code></pre>
                 </section>
 
                 <section id="fragments">
                         <h2>Which package loads?</h2>
-                        <pre><code class="hljs" data-trim contenteditable>
+                        <pre><code class="lang-r hljs" data-trim contenteditable>
                         > library("ggplot2")
                         </code></pre>
-                        <pre><code class="hljs fragment" data-trim contenteditable>
+                        <pre><code class="lang-r hljs fragment" data-trim contenteditable>
                         > # ggplot2 loads
                         </code></pre>
                 </section>
 
                 <section id="fragments">
                         <h2>Which package loads?</h2>
-                        <pre><code class="hljs" data-trim contenteditable>
+                        <pre><code class="lang-r hljs" data-trim contenteditable>
 dplyr <- "ggplot2"
 > library(dplyr)
                         </code></pre>
-                        <pre><code class="hljs fragment" data-trim contenteditable>
+                        <pre><code class="lang-r hljs fragment" data-trim contenteditable>
 
 Attaching package: ‘dplyr’
 
@@ -130,7 +134,7 @@ The following objects are masked from ‘package:base’:
     <td class="tg-yw4l">filter, select, arrange, summarize</td>
   </tr>
 </table>
-                <p> We will focus on subset </p>
+                <p> We will focus on <code class="lang-r hljs" style="display:inline"> subset()</code>.</p>
                 </section>
 
 
@@ -138,7 +142,7 @@ The following objects are masked from ‘package:base’:
                     <script type="text/template">
                         ### `subset()` uses NSE
 
-                        ```
+                        ```r
                         > pop.df
   state year pop
 1    CA 2005  37
@@ -147,22 +151,23 @@ The following objects are masked from ‘package:base’:
 4    WI 2015   6
 ```
 
-```
+```r
 > subset(pop.df, year == 2015)
   state year pop
 3    CA 2015  39
 4    WI 2015   6
-> # year is the column name
 ```
+
+`year` is the column name (in dataframe scope)
                     </script>
                 </section>
 
 
                 <section data-markdown>
                     <script type="text/template">
-                        ### `subset()` uses NSE with weird scoping
+                        ### `subset()` uses NSE with mixed scoping
 
-                        ```
+                        ```r
                         > pop.df
   state year pop
 1    CA 2005  37
@@ -171,15 +176,16 @@ The following objects are masked from ‘package:base’:
 4    WI 2015   6
 ```
 
-```
+```r
 > x <- 2015
 > subset(pop.df, year == x)
   state year pop
 3    CA 2015  39
 4    WI 2015   6
-> # year is the column name, x is the global variable name
 ```
-
+`year` is the column name (in dataframe scope)
+<br/>
+`x` is the global variable (global scope)
 
                     </script>
                 </section>
@@ -187,9 +193,9 @@ The following objects are masked from ‘package:base’:
 
                 <section data-markdown>
                     <script type="text/template">
-                        ### 1. Basic problem with `subset()`
+                        ### `subset()` can't differentiate scopes
 
-                        ```
+                        ```r
                         > pop.df
   state year pop
 1    CA 2005  37
@@ -198,7 +204,7 @@ The following objects are masked from ‘package:base’:
 4    WI 2015   6
 ```
 
-```
+```r
 results.by.year.1 <- function(df, year) {
     df.subset <- subset(df, year == year)
     # Do some computation
@@ -207,21 +213,21 @@ results.by.year.1 <- function(df, year) {
 }
 ```
 
-```
+```r
 > results.by.year.1(pop.df, 2015)
 [1] 4
-> # Incorrect result. Silent mistake! Correct answer is 2.
+> # Incorrect result. Silent mistake! Correct result is 2.
 ```
-<p><small>Using `year` as an argument name is a bad idea. Let's change it.</small></p>
+<p>Using `year` as an argument name is a bad idea. <br/> Let's change it.</p>
                     </script>
                 </section>
 
 
                 <section data-markdown>
                     <script type="text/template">
-                        ### 2. Basic problem with `subset()`
+                        ### Apparent fix
 
-                        ```
+                        ```r
                         > pop.df
   state year pop
 1    CA 2005  37
@@ -230,7 +236,7 @@ results.by.year.1 <- function(df, year) {
 4    WI 2015   6
 ```
 
-```
+```r
 results.by.year.2 <- function(df, yr) {
     df.subset <- subset(df, year == yr)
     # Do some computation
@@ -239,12 +245,12 @@ results.by.year.2 <- function(df, yr) {
 }
 ```
 
-```
+```r
 > results.by.year.2(pop.df, 2015)
 [1] 2
 > # Correct result
 ```
-<p><small>This doesn't solve the problem. It only hides the problem.</small></p>
+<p>This doesn't solve the problem. <br/> It only hides the problem.</p>
                     </script>
                 </section>
 
@@ -252,9 +258,9 @@ results.by.year.2 <- function(df, yr) {
 
                 <section data-markdown>
                     <script type="text/template">
-                        ### 3. Basic problem with `subset()`
+                        ### Hidden problem with `subset()`
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -263,7 +269,7 @@ results.by.year.2 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 results.by.year.2 <- function(df, yr) {
     df.subset <- subset(df, year == yr)
     # Do some computation
@@ -272,12 +278,12 @@ results.by.year.2 <- function(df, yr) {
 }
 ```
 
-```
+```r
 > results.by.year.2(pop.df, 2015)
 [1] 1
-> # Incorrect result. Silent mistake! Correct answer is 2.
+> # Incorrect result. Silent mistake! Correct result is 2.
 ```
-<p><small>How do we choose the second function argument name for `results.by.year.x()` ?</small></p>
+<p>How do we choose the second argument name for `results.by.year.x()` ?</p>
                     </script>
                 </section>
 
@@ -286,7 +292,7 @@ results.by.year.2 <- function(df, yr) {
                     <script type="text/template">
                         ### Dirty Fix
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -295,7 +301,7 @@ results.by.year.2 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 results.by.year.3 <- function(df, yr) {
     testthat::expect_false("yr" %in% names(df))
     df.subset <- subset(df, year == yr)
@@ -305,12 +311,12 @@ results.by.year.3 <- function(df, yr) {
 }
 ```
 
-```
+```r
 > results.by.year.3(pop.df, 2015)
-Error: "yr" %in% names(df) isn't false
-> # Throws error. At least it's not a silent mistake.
+Error: "yr" %in% names(df) is not false
+> # Throws error. At least it is not a silent mistake.
 ```
-<p><small>This will cause code execution to stop but it won't make a silent mistake.</small></p>
+<p>This will stop code execution but it won't make a silent mistake.</p>
                     </script>
                 </section>
 
@@ -318,7 +324,7 @@ Error: "yr" %in% names(df) isn't false
                     <script type="text/template">
                         ### Better Fix
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -327,21 +333,22 @@ Error: "yr" %in% names(df) isn't false
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 results.by.year.4 <- function(df, yr) {
-    df.subset <- df[df[["year"]] == yr, ]
+    df.subset <- df[df[["year"]] == yr, , drop = FALSE]
     # Do some computation
     return_value <- nrow(df.subset)
     return(return_value)
 }
 ```
 
-```
+```r
 > results.by.year.4(pop.df, 2015)
 [1] 2
 > # Correct result
 ```
-<p><small>Don't use `subset()`.</small></p>
+<p>Don't use `subset()`. Use logical indexing.
+<br/><small>(Remember to use `drop = FALSE`)</small></p>
                     </script>
                 </section>
 
@@ -350,11 +357,11 @@ results.by.year.4 <- function(df, yr) {
                     <script type="text/template">
                         #### What about `filter` functions in `dplyr` ?
 
-                        `dplyr` contains two functions that do the job of `subset`:
+                        `dplyr` contains two functions that do the job of `subset()`:
                         <br/>
 
-                        - `dplyr::filter` - uses NSE
-                        - `dplyr::filter_` - uses SE
+                        - `filter()` - uses <span style="color: blue">NSE</span>
+                        - `filter_()` - uses <span style="color: red">SE</span>
 
                         <br/>
                         Do these solve the problem?
@@ -365,9 +372,9 @@ results.by.year.4 <- function(df, yr) {
 
                 <section data-markdown>
                     <script type="text/template">
-                        #### `dplyr::filter()` Examples
+                        #### `filter()` with Single Scope
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -376,7 +383,7 @@ results.by.year.4 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 > # NSE function, single scope
 > dplyr::filter(pop.df, year == 2015)
   state year pop   yr rate
@@ -390,9 +397,9 @@ results.by.year.4 <- function(df, yr) {
 
                 <section data-markdown>
                     <script type="text/template">
-                        #### `dplyr::filter()` Examples
+                        #### `filter()` with Mixed Scope
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -401,7 +408,7 @@ results.by.year.4 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 > # NSE function, mixed scope
 > year <- 2015
 > dplyr::filter(pop.df, year == year)
@@ -419,9 +426,9 @@ results.by.year.4 <- function(df, yr) {
 
                 <section data-markdown>
                     <script type="text/template">
-                        #### `dplyr::filter_()` Examples
+                        #### `filter()_` with Single Scope
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -430,7 +437,7 @@ results.by.year.4 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 > # SE function, single scope
 > dplyr::filter_(pop.df, "year == 2015")
   state year pop   yr rate
@@ -445,9 +452,9 @@ results.by.year.4 <- function(df, yr) {
 
                 <section data-markdown>
                     <script type="text/template">
-                        #### `dplyr::filter_()` Examples
+                        #### `filter()_` with Mixed Scope
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -456,7 +463,7 @@ results.by.year.4 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 > # SE function, mixed scope
 > year <- 2015
 > dplyr::filter_(pop.df, "year == year")
@@ -468,7 +475,7 @@ results.by.year.4 <- function(df, yr) {
 > # Incorrect result
 
 ```
-<p><small>Using a SE function does not solve the problem of mixed scope.</small></p>
+<p>Using a SE function by itself does not solve the problem of mixed scope.</p>
 
                     </script>
                 </section>
@@ -476,9 +483,9 @@ results.by.year.4 <- function(df, yr) {
 
                 <section data-markdown>
                     <script type="text/template">
-                        ### Problem of scope remains
+                        ### Problem of mixed scope remains
 
-                        ```
+                        ```r
                         > pop.df
   state year pop   yr  rate
 1    CA 2005  37 2005  4.01
@@ -487,7 +494,7 @@ results.by.year.4 <- function(df, yr) {
 4    WI 2015   6 5000 10.00
 ```
 
-```
+```r
 results.by.year.5 <- function(df, yr) {
     df.subset <- dplyr::filter_(pop.df, "year == yr")
     # Do some computation
@@ -496,23 +503,85 @@ results.by.year.5 <- function(df, yr) {
 }
 ```
 
-```
+```r
 > results.by.year.5(pop.df, 2015)
 [1] 1
-> # Incorrect result. Silent mistake! Correct answer is 2.
+> # Incorrect result. Silent mistake! Correct result is 2.
 ```
+
+`year` is the column name (in dataframe scope)
+<br/>
+`yr` is in both in dataframe scope and function scope
                     </script>
                 </section>
 
 
                 <section data-markdown>
                     <script type="text/template">
+                        ### Fix using constructed condition
+
+                        ```r
+                        > pop.df
+  state year pop   yr  rate
+1    CA 2005  37 2005  4.01
+2    WI 2005   6 1000  2.00
+3    CA 2015  39 3000  6.00
+4    WI 2015   6 5000 10.00
+```
+
+```r
+results.by.year.6 <- function(df, yr) {
+    condition <- lazyeval::interp(~year == x, x = yr)
+    df.subset <- dplyr::filter_(pop.df, .dots = condition)
+    # Do some computation
+    return_value <- nrow(df.subset)
+    return(return_value)
+}
+```
+
+```r
+> results.by.year.6(pop.df, 2015)
+[1] 2
+> # Correct result
+```
+(can be slow; possible precision issues with `double`s)
+
+                    </script>
+                </section>
+
+
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ### NSE + Mixed scope = silent mistakes
+                        ```r
+                        # Dirty Fix - Put in assert-like statements
+                        testthat::expect_false("yr" %in% names(df))
+                        df.subset <- subset(df, year == yr)
+                        ```
+
+                        ```r
+                        # Fix 1 - Use SE with constructed condition
+                        condition <- lazyeval::interp(~year == x, x = yr)
+                        df.subset <- dplyr::filter_(pop.df, .dots = condition)
+                        ```
+
+                        ```r
+                        # Fix 2 - Use logical indexing
+                        df.subset <- df[df[["year"]] == yr, , drop = FALSE]
+                        ```
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
                         ### Takeaways
 
-                        - Avoid NSE when possible.
-                        - Be careful which functions use non-standard evaluation.
-                        - Add asserts when possible.
-                        - For programming, permanent code, package writing, use indexing instead
+                        - NSE can cause problems with scope
+                        - Even with SE, mixed scope can cause problems
+                        - Add assert-like statements, especially with NSE
+                        - For non-interactive code, package writing, use logical indexing instead
 
 
                     </script>
@@ -523,7 +592,7 @@ results.by.year.5 <- function(df, yr) {
                 <h1>Thank you</h1>
                 <ul>
                     <li>Slides: <a href="http://tiny.cc/quirksofr">tiny.cc/quirksofr</a></li>
-                    <li>List of NSE functions: <a href="http://tiny.cc/rnse">tiny.cc/rnse</a></li>
+                    <!-- <li>List of NSE functions: <a href="http://tiny.cc/rnse">tiny.cc/rnse</a></li> -->
                 </ul>
                     <p>
                         <small><a href="http://www.perfectlyrandom.org">Ankur Gupta</a> |

@@ -91,7 +91,7 @@ results.by.year.3(pop.df, 2015) # Throws error. At least it's not a silent mista
 
 # 4 : Don't use subset
 results.by.year.4 <- function(df, yr) {
-    df.subset <- df[df[["year"]] == yr, ]
+    df.subset <- df[df[["year"]] == yr, ,drop=FALSE]
     # Do some computation
     return_value <- nrow(df.subset)
     return(return_value)
@@ -129,6 +129,7 @@ results.by.year.5 <- function(df, yr) {
 results.by.year.5(pop.df, 2015) # incorrect answer
 # We still get wrong results here.
 
+
 # There happen to be more pitfalls with these filter functions.
 # Let's first look at NSE function call with a string.
 dplyr::filter(pop.df, "year == 2015") # throws an error, which is good.
@@ -154,8 +155,32 @@ dplyr::filter_(pop.df, year == 2005) # incorrect result.
 yr <- 2015
 condition <- lazyeval::interp(~year == x, x = yr)
 dplyr::filter_(pop.df, .dots = condition)
+dplyr::filter_(pop.df, condition)
+
+results.by.year.6 <- function(df, yr) {
+    condition <- lazyeval::interp(~year == x, x = yr)
+    df.subset <- dplyr::filter_(pop.df, .dots = condition)
+    # Do some computation
+    return_value <- nrow(df.subset)
+    return(return_value)
+}
+# Let's look at that example from before.
+results.by.year.6(pop.df, 2015) # correct result
+# We still get wrong results here.
 
 
+condition <- lazyeval::interp(~year %in% x, x = c(13.800, 80.23864328, 90.674327, 1/3))
+dplyr::filter_(pop.df, .dots = condition)
+
+df <- data.frame(x = seq(1, 10, length = 100))[80:90, , drop = FALSE]
+large1 <- 34.8094859837589789592375972379277907239049032 * 8236545343483648 * 523985755234324654
+large2 <- large1*1.00000000000000000000001
+large1 == large2
+df$x[1] <- large
+df$x[1] == large
+system.time({condition <- lazyeval::interp(~x %in% y, y = c(1001.89, 1:1000000));
+dplyr::filter_(df, .dots = condition)})
+system.time({df[df$x %in% c(1001.89, 1:1000000), , drop=FALSE]})
 # condition = ~year == I(yr)
 # dplyr::filter_(pop.df, condition)
 
