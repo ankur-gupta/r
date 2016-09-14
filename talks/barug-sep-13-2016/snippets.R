@@ -51,7 +51,7 @@ results.by.year.2(pop.df, 2015) # Correct result
 
 
 # But this does not solve the problem. More dangerously, this hides the problem!
-# Say, you write this function once and use it successfully i your codebase.
+# Say, you write this function once and use it successfully in your codebase.
 # Now, six months later, you reuse this function but this time you use a different dataframe.
 # Not only do you have population but also yearly returns in dollars on a $50000 state bond.
 # The dataframe looks like this:
